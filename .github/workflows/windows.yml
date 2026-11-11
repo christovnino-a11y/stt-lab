@@ -24,13 +24,16 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 20
     env:
-      STT_LAB_INSTALL_DIR: ${{ runner.temp }}\STT Lab
-      STT_LAB_DATA_DIR: ${{ runner.temp }}\STT Lab data
       HF_HUB_DISABLE_TELEMETRY: '1'
-      HF_HOME: ${{ runner.temp }}\HF
       PYTHONUTF8: '1'
     steps:
       - uses: actions/checkout@v5
+      - name: Set temporary install and cache paths
+        shell: pwsh
+        run: |
+          "STT_LAB_INSTALL_DIR=$env:RUNNER_TEMP\STT Lab" >> $env:GITHUB_ENV
+          "STT_LAB_DATA_DIR=$env:RUNNER_TEMP\STT Lab data" >> $env:GITHUB_ENV
+          "HF_HOME=$env:RUNNER_TEMP\HF" >> $env:GITHUB_ENV
       - name: Install with Windows PowerShell 5.1
         shell: powershell
         run: .\install.ps1 -Source . -InstallOnly
