@@ -35,8 +35,15 @@ jobs:
           "STT_LAB_DATA_DIR=$env:RUNNER_TEMP\STT Lab data" >> $env:GITHUB_ENV
           "HF_HOME=$env:RUNNER_TEMP\HF" >> $env:GITHUB_ENV
       - name: Install with Windows PowerShell 5.1
+        if: github.ref_type != 'tag'
         shell: powershell
         run: .\install.ps1 -Source . -InstallOnly
+      - name: Install from the public versioned URL with Windows PowerShell 5.1
+        if: github.ref_type == 'tag'
+        shell: powershell
+        run: |
+          $uri = "https://raw.githubusercontent.com/christovnino-a11y/stt-lab/$env:GITHUB_REF_NAME/install.ps1"
+          & ([scriptblock]::Create((Invoke-RestMethod $uri))) -InstallOnly
       - name: Test the launcher
         shell: powershell
         run: '& "$env:STT_LAB_INSTALL_DIR\STT Lab.cmd" --help'
