@@ -58,10 +58,11 @@ Pokud se instalace přeruší, spusť stejný příkaz znovu. První přepis mů
 
 ## Co dělají jednotlivé nástroje
 
+- **Canary-1B-v2** převádí řeč na text a umí ji volitelně přeložit do angličtiny.
+- **Nemotron 3 Diarization** rozpoznává, kdy v nahrávce mluví jednotliví lidé. Když zapneš **Rozlišit mluvčí**, STT Lab podle něj přidá k větám štítky jako `[Mluvčí 1]` a `[Mluvčí 2]`.
 - **Instalační skripty** připraví prostředí v uživatelské složce, nainstalují Python 3.12, aplikaci a její knihovny. Ke správě Pythonu a závislostí používají **uv**.
 - **Python** spouští aplikaci a její logiku. **Gradio** zajišťuje webové rozhraní, které se otevře v prohlížeči na tomto počítači.
 - **FFmpeg** vytáhne zvuk z audia nebo videa a převede ho na mono se vzorkovací frekvencí 16 kHz. **soundfile** čte a ukládá zvuk, **NumPy** pracuje se vzorky, **soxr** převzorkuje mikrofonní vstup a **librosa** pomáhá připravit zvuk pro model.
-- **Canary-1B-v2** převádí řeč na text a umí ji volitelně přeložit do angličtiny. **Nemotron 3 Diarization** určuje, kdy mluví jednotliví mluvčí, aby je aplikace mohla označit v přepisu.
 - **PyTorch** spouští výpočty modelů. **Transformers** načítá jejich váhy a připravuje vstupy pro přepis a rozlišení mluvčích.
 - **Hugging Face** hostuje veřejné váhy modelů, které aplikace stáhne při prvním spuštění.
 - Aplikace ukládá hotové přepisy do místní složky `vystupy`. **python-docx** vytváří soubory pro Word. Aplikace přímo zapisuje i Markdown a titulky SRT.
