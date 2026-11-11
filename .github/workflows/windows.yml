@@ -1,0 +1,59 @@
+name: Windows x64
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app.py'
+      - 'install.ps1'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/**'
+  workflow_dispatch:
+    inputs:
+      models:
+        description: Download the two NVIDIA models and test transcription
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    env:
+      STT_LAB_INSTALL_DIR: ${{ runner.temp }}\STT Lab
+      STT_LAB_DATA_DIR: ${{ runner.temp }}\STT Lab data
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      HF_HOME: ${{ runner.temp }}\HF
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install with Windows PowerShell 5.1
+        shell: powershell
+        run: .\install.ps1 -Source . -InstallOnly
+      - name: Test the launcher
+        shell: powershell
+        run: '& "$env:STT_LAB_INSTALL_DIR\STT Lab.cmd" --help'
+      - name: Verify decoding, exports and the localhost server
+        shell: powershell
+        run: |
+          $project = (Get-ChildItem "$env:STT_LAB_INSTALL_DIR\releases" -Directory)[0].FullName
+          & "$project\.venv\Scripts\python.exe" .github/check_install.py $project
+      - name: Transcribe speech and run speaker diarization
+        if: inputs.models
+        shell: powershell
+        run: |
+          Add-Type -AssemblyName System.Speech
+          $sample = Join-Path $env:RUNNER_TEMP speech.wav
+          $speaker = New-Object System.Speech.Synthesis.SpeechSynthesizer
+          try {
+            $speaker.SetOutputToWaveFile($sample)
+            $speaker.Speak('This is a short recording to verify that speech transcription works.')
+          } finally {
+            $speaker.Dispose()
+          }
+          $project = (Get-ChildItem "$env:STT_LAB_INSTALL_DIR\releases" -Directory)[0].FullName
+          & "$project\.venv\Scripts\python.exe" .github/check_install.py $project $sample
