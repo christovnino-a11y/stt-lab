@@ -6,7 +6,7 @@ Lokální přepis češtiny a dalších jazyků z mikrofonu, zvukového souboru 
 
 ### Mac s Apple Silicon
 
-Vlož do Terminálu na Macu s čipem M1 nebo novějším a macOS 14 nebo novějším.
+Vlož do Terminálu.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/christovnino-a11y/stt-lab/v0.1.0/install.sh | /bin/bash
@@ -14,7 +14,7 @@ curl -fsSL https://raw.githubusercontent.com/christovnino-a11y/stt-lab/v0.1.0/in
 
 ### Windows x64
 
-Vlož do PowerShellu na 64bitových Windows s procesorem Intel nebo AMD.
+Vlož do PowerShellu.
 
 ```powershell
 & ([scriptblock]::Create((Invoke-RestMethod 'https://raw.githubusercontent.com/christovnino-a11y/stt-lab/v0.1.0/install.ps1')))
@@ -22,7 +22,15 @@ Vlož do PowerShellu na 64bitových Windows s procesorem Intel nebo AMD.
 
 Příkaz nainstaluje uv, Python 3.12, aplikaci a její závislosti včetně FFmpeg do složky tvého uživatele. Účet na GitHubu, API klíč ani práva správce nejsou potřeba. Zdrojové skripty si můžeš prohlédnout před spuštěním. [Mac](install.sh) · [Windows](install.ps1)
 
-Po instalaci se otevře [STT Lab v prohlížeči](http://127.0.0.1:7864). Při prvním spuštění potřebuješ internet a přibližně 8 GB volného místa pro instalaci a váhy modelů. Samotné modely mají přibližně 4 GB. Doporučená RAM je 16 GB. Na Windows běží přepis na CPU, takže zpracování může být pomalejší než na Apple Silicon.
+Po instalaci se otevře [STT Lab v prohlížeči](http://127.0.0.1:7864). Při prvním spuštění potřebuješ internet ke stažení modelů.
+
+## Hardwarové nároky
+
+- **Mac** s Apple Silicon (M1 nebo novější) a macOS 14 nebo novějším. PyTorch využije integrovanou grafiku přes Metal (MPS), pokud je dostupná. Jinak aplikace běží na procesoru.
+- **Windows x64** s procesorem Intel nebo AMD. V této verzi běží přepis i rozlišení mluvčích na CPU. Instalaci a přepis jsme ověřili na virtuálním stroji se 4 vCPU a 16 GB RAM. [Ověření na Windows](https://github.com/christovnino-a11y/stt-lab/actions/runs/42989102447) · [Parametry testovacího stroje](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories)
+- **Paměť a disk.** Pro běžný provoz doporučujeme 16 GB RAM. Pro instalaci nech alespoň 8 GB volného místa, z toho přibližně 4 GB zabírají modely. Pro vlastní nahrávky počítej s dalším místem.
+
+Samostatnou grafickou kartu aplikace nevyžaduje. Při testu krátké nahrávky s přepisem i rozlišením mluvčích na Macu v režimu CPU měl proces špičku přibližně 4,3 GiB RAM.
 
 ## Spuštění příště
 
@@ -47,6 +55,16 @@ Aplikaci ukončíš pomocí Ctrl+C v okně, ze kterého běží. Pokud port 7864
 - Výsledky stáhneš z rozhraní nebo najdeš přes **Otevřít složku s výstupy**. Na Macu jsou v `~/Library/Application Support/STT Lab/vystupy`, na Windows v `%LOCALAPPDATA%\STT Lab\vystupy`.
 
 Pokud se instalace přeruší, spusť stejný příkaz znovu. První přepis může chvíli čekat na dokončení stahování a načtení modelů.
+
+## Co dělají jednotlivé nástroje
+
+- **Instalační skripty** připraví prostředí v uživatelské složce, nainstalují Python 3.12, aplikaci a její knihovny. Ke správě Pythonu a závislostí používají **uv**.
+- **Python** spouští aplikaci a její logiku. **Gradio** zajišťuje webové rozhraní, které se otevře v prohlížeči na tomto počítači.
+- **FFmpeg** vytáhne zvuk z audia nebo videa a převede ho na mono se vzorkovací frekvencí 16 kHz. **soundfile** čte a ukládá zvuk, **NumPy** pracuje se vzorky, **soxr** převzorkuje mikrofonní vstup a **librosa** pomáhá připravit zvuk pro model.
+- **Canary-1B-v2** převádí řeč na text a umí ji volitelně přeložit do angličtiny. **Nemotron 3 Diarization** určuje, kdy mluví jednotliví mluvčí, aby je aplikace mohla označit v přepisu.
+- **PyTorch** spouští výpočty modelů. **Transformers** načítá jejich váhy a připravuje vstupy pro přepis a rozlišení mluvčích.
+- **Hugging Face** hostuje veřejné váhy modelů, které aplikace stáhne při prvním spuštění.
+- Aplikace ukládá hotové přepisy do místní složky `vystupy`. **python-docx** vytváří soubory pro Word. Aplikace přímo zapisuje i Markdown a titulky SRT.
 
 ## Instalace s pomocí AI
 
